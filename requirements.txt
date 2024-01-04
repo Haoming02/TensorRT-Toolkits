@@ -1,0 +1,17 @@
+# 2024.1
+pycuda
+
+# 8.6.1
+tensorrt
+
+# 2.1.4
+pandas
+
+# 1.26.3
+numpy
+
+# 10.2.0
+Pillow
+
+# 4.9.0.80
+opencv-python
