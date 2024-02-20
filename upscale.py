@@ -6,23 +6,17 @@ import os
 from TensorRT import TrtModel
 from common import parse_path
 
-# ============================================= #
-# Model Used:                                   #
-# https://openmodeldb.info/models/4x-Nomos8kDAT #
-# ============================================= #
 
-SHAPE = {
-    "B": 1,
-    "C": 3,
-    "H": 128,
-    "W": 128
-}
-
-
-def merge_image(chunks, vertical_tile, horizontal_tile, chunk_size=512, overlap=16):
+def merge_image(
+    chunks: list,
+    vertical_tile: int,
+    horizontal_tile: int,
+    chunk_size: int,
+    overlap: int,
+) -> np.array:
     """Merge the chunks back into a full image"""
     merged_image = np.zeros(
-        (vertical_tile * chunk_size, horizontal_tile * chunk_size, 3), dtype=np.float32
+        (vertical_tile * chunk_size, horizontal_tile * chunk_size, 3), dtype=np.float16
     )
 
     for y in range(vertical_tile):
@@ -53,15 +47,10 @@ def merge_image(chunks, vertical_tile, horizontal_tile, chunk_size=512, overlap=
     return np.clip(merged_image * 255.0, 0, 255).astype(np.uint8)
 
 
-def preprocess_image(image: Image, chunk_size=128, overlap=4) -> list:
+def preprocess_image(image: Image, chunk_size: int, overlap: int) -> list:
     """Slice the input image into chunks with overlaps"""
-    image = image.convert("RGBA")
 
-    new_image = Image.new("RGBA", image.size, "WHITE")
-    new_image.paste(image, mask=image)
-
-    image = new_image.convert("RGB")
-    image = np.asarray(image)
+    image = np.asarray(image.convert("RGB"))
 
     slices = []
     height, width = image.shape[0:2]
@@ -81,14 +70,16 @@ def preprocess_image(image: Image, chunk_size=128, overlap=4) -> list:
     for y in range(0, padded_height - chunk_size + 1, stride):
         for x in range(0, padded_width - chunk_size + 1, stride):
             chunk = padded_image[y : y + chunk_size, x : x + chunk_size]
+
             # RGB -> BGR
-            chunk = chunk[:, :, ::-1].astype(np.float32)
+            chunk = chunk[:, :, ::-1].astype(np.float16)
             # 0 ~ 255 -> 0.0 ~ 1.0
             chunk = np.clip(chunk / 255.0, 0.0, 1.0)
             # (128, 128, 3) -> (3, 128, 128)
             chunk = np.transpose(chunk, (2, 0, 1))
             # (3, 128, 128) -> (1, 3, 128, 128)
             chunk = np.expand_dims(chunk, 0)
+
             slices.append(chunk)
 
     return slices, vertical_tiles, horizontal_tiles
@@ -106,28 +97,46 @@ def process(path: str):
         print("No Valid Images...")
         return
 
-    model = TrtModel("4xNomos8kDAT.trt")
+    Benchmark = len(IMAGES) == 1
+    if Benchmark:
+        import time
+        start_time = time.time()
+
+    try:
+        model = TrtModel("4xNomos8kSCHAT-S.trt", dtype=np.float16)
+        SHAPE = (1, 3, 256, 256)
+    except FileNotFoundError:
+        model = TrtModel("4xNomos8kDAT.trt")
+        SHAPE = (1, 3, 192, 192)
 
     for IMAGE in IMAGES:
         OUTPUT = []
-        data, vertical_tile, horizontal_tile = preprocess_image(IMAGE)
+        data, vertical_tile, horizontal_tile = preprocess_image(
+            IMAGE, int(SHAPE[2]), int(SHAPE[2] / 8)
+        )
 
         for img in data:
             results = model(img)[0]
-            # (1, 786432) -> (1, 3, 512, 512)
-            result = results.reshape((1, 3, 512, 512))
-            # (1, 3, 512, 512) -> (512, 512, 3)
-            img = np.clip(result[0].transpose((1, 2, 0)), 0, 1)
-            # BGR -> RGB
+            result = results.reshape((3, int(SHAPE[2] * 4), int(SHAPE[3] * 4)))
+            img = np.clip(result.transpose((1, 2, 0)), 0, 1)
             OUTPUT.append(img[:, :, ::-1])
 
-        result = merge_image(OUTPUT, vertical_tile, horizontal_tile)
+        result = merge_image(
+            OUTPUT,
+            vertical_tile,
+            horizontal_tile,
+            int(SHAPE[2] * 4),
+            int(SHAPE[2] / 8 * 4),
+        )
 
         w, h = IMAGE.size
         img = Image.fromarray(result[0 : h * 4, 0 : w * 4])
         img.save(f"{os.path.splitext(IMAGE.filename)[0]}_4x.png")
 
+        if Benchmark:
+            print(f"Took: {round(time.time() - start_time, 2)}s")
+
 
 if __name__ == "__main__":
-    PATH = input("Path to Images Folder: ")
-    process(PATH)
+    path = input("Path to Image/Folder: ")
+    process(path)
