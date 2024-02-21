@@ -30,7 +30,7 @@ Caption 240 images within a folder using `RTX 3060`
 </details>
 
 #### Upscale
-Upscale the images by 4x
+Upscale the images by
 - Run the `upscale.py` script and enter a path
 
 <details>
@@ -40,6 +40,7 @@ Upscale a 1024x1024 Image on a `RTX 3060`
 - Running on [Forge](https://github.com/lllyasviel/stable-diffusion-webui-forge) in (`fp32`) PyTorch (`.pth`) format: **~54 sec**
 - Running (`fp32`) `4xNomos8kDAT` in TensorRT format: **~36 sec**
 - Running (`fp16`) `4xNomos8kSCHAT-S` in TensorRT format: **~26 sec**
+- Running (`fp16`) `2xHFA2kAVCSRFormer` in TensorRT format: **~4 sec**
 </details>
 
 ## Convert Your Own Models

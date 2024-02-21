@@ -10,6 +10,9 @@ def debug(path: str):
     print(model.graph.input)
     print(model.graph.output)
 
+    for node in model.graph.node:
+        print(node.name)
+
 
 def convert(path: str):
     """Attempt to convert the model to fp16 precision"""
