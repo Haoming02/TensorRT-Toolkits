@@ -1,4 +1,9 @@
-﻿# TensorRT Toolkits
+﻿<h2 align="center">Outdated</h2>
+<p align="center">See <a href="https://github.com/Haoming02/TensorRT-Cpp">TensorRT-Cpp</a> instead...</p>
+
+<hr>
+
+# TensorRT Toolkits
 Inference models blazingly fast thanks to TensorRT acceleration!
 
 ## Prerequisites
@@ -49,7 +54,3 @@ Upscale a 1024x1024 Image on a `RTX 3060`
     ```bash
     trtexec --onnx=model.onnx --saveEngine=model.trt
     ```
-
-<hr> 
-
-<sup>This repo serves as a documentation and practice for converting **Onnx** models to **TensorRT** format. </sup>

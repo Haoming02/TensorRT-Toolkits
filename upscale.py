@@ -13,7 +13,7 @@ def merge_image(
     horizontal_tile: int,
     chunk_size: int,
     overlap: int,
-) -> np.array:
+) -> np.ndarray:
     """Merge the chunks back into a full image"""
     merged_image = np.zeros(
         (vertical_tile * chunk_size, horizontal_tile * chunk_size, 3), dtype=np.float16
@@ -47,10 +47,10 @@ def merge_image(
     return np.clip(merged_image * 255.0, 0, 255).astype(np.uint8)
 
 
-def preprocess_image(image: Image, chunk_size: int, overlap: int) -> list:
+def preprocess_image(image: Image.Image, chunk_size: int, overlap: int) -> tuple:
     """Slice the input image into chunks with overlaps"""
 
-    image = np.asarray(image.convert("RGB"))
+    image = np.asarray(image.convert("RGB"), dtype=np.uint8)
 
     slices = []
     height, width = image.shape[0:2]
@@ -97,11 +97,6 @@ def process(path: str):
         print("No Valid Images...")
         return
 
-    Benchmark = len(IMAGES) == 1
-    if Benchmark:
-        import time
-        start_time = time.time()
-
     try:
         model = TrtModel("4xNomos8kSCHAT-S.trt", dtype=np.float16)
         SHAPE = (1, 3, 256, 256)
@@ -132,9 +127,6 @@ def process(path: str):
         w, h = IMAGE.size
         img = Image.fromarray(result[0 : h * 4, 0 : w * 4])
         img.save(f"{os.path.splitext(IMAGE.filename)[0]}_4x.png")
-
-        if Benchmark:
-            print(f"Took: {round(time.time() - start_time, 2)}s")
 
 
 if __name__ == "__main__":

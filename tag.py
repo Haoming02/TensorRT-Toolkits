@@ -7,13 +7,10 @@ import os
 from TensorRT import TrtModel
 from common import parse_path
 
-Benchmark = False
 
-
-def preprocess_image(image: Image) -> np.array:
+def preprocess_image(image: Image.Image) -> np.ndarray:
     """Given an Image, preprocess to the specified format"""
-
-    image = np.asarray(image.convert("RGB"))
+    image = np.asarray(image.convert("RGB"), dtype=np.uint8)
 
     # (H, W, 3) -> (448, 448, 3)
     image = cv2.resize(image, (448, 448), interpolation=cv2.INTER_AREA)
@@ -27,8 +24,8 @@ def preprocess_image(image: Image) -> np.array:
 
 def process(
     path: str,
-    general_threshold: float = 0.36,
-    character_threshold: float = 1.0,
+    general_threshold: float = 0.5,
+    character_threshold: float = 100.0,
     escape: bool = True,
     replace_underscore: bool = True,
 ):
@@ -42,10 +39,6 @@ def process(
     if len(IMAGES) == 0:
         print("No Valid Images...")
         return
-
-    if Benchmark:
-        import time
-        start_time = time.time()
 
     model = TrtModel("WD14.trt", dtype=np.float16)
     CSV = pd.read_csv("selected_tags.csv")
@@ -78,9 +71,6 @@ def process(
 
         with open(f"{os.path.splitext(IMAGE.filename)[0]}.txt", "w") as OUTPUT:
             OUTPUT.write(caption)
-
-    if Benchmark:
-        print(f"Took: {round(time.time() - start_time, 2)}s")
 
 
 if __name__ == "__main__":
