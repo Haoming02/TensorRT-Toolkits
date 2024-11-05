@@ -1,7 +1,8 @@
-# tensorrt
-
+# tensorrt~=10.0.1
 pycuda~=2024.1
-pandas~=2.1.4
-numpy~=1.26.3
+
+onnx~=1.17.0
+numpy~=1.26.0
+pandas~=2.1.0
 Pillow~=10.2.0
-opencv-python~=4.9.0.80
+opencv-python~=4.9.0

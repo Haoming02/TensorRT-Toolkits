@@ -1,4 +1,9 @@
 __pycache__
-*.trt
-*.bat
 venv
+
+*.bat
+*.csv
+*.trt
+*.txt
+*.jpg
+*.png

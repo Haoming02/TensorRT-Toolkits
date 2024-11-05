@@ -1,56 +1,65 @@
-﻿<h2 align="center">Outdated</h2>
-<p align="center">See <a href="https://github.com/Haoming02/TensorRT-Cpp">TensorRT-Cpp</a> instead...</p>
-
-<hr>
-
-# TensorRT Toolkits
-Inference models blazingly fast thanks to TensorRT acceleration!
+﻿<h1 align="center">TensorRT Toolkits</h1>
+<p align="center">Blazingly fast deep learning inference via TensorRT acceleration</p>
 
 ## Prerequisites
-- nVIDIA GPU
+- Nvidia GPU
 - CUDA Toolkit
 - cuDNN
+- TensorRT
+
+> [!IMPORTANT]
+> This repo was built with TensorRT **10.0.1** on Python **3.10**; older TensorRT is **not** compatible
 
 ## Getting Started
 0. Clone the Repo
-1. Install the necessary packages
     ```bash
-    pip install -r requirements.txt
+    git clone https://github.com/Haoming02/TensorRT-Toolkits
+    cd TensorRT-Toolkits
     ```
-    > For `tensorrt`, download it from: https://developer.nvidia.com/tensorrt-download *(account required)*
-
-2. Download the converted model(s) from [Releases](https://github.com/Haoming02/TensorRT-Toolkits/releases) and place it into the Repo folder
+1. Create a virtual environment
+    ```bash
+    python -m venv venv
+    venv\scripts\activate
+    ```
+2. Install the necessary packages
+    ```bash
+    (venv) pip install -r requirements.txt
+    ```
+3. Download **TensorRT** package from:
+    - https://developer.nvidia.com/tensorrt/download
+    - *(a developer account is required)*
+4. Extract and install the pre-built wheel in the `python` folder of the downloaded `.zip`
+    ```bash
+    (venv) pip install tensorrt-10.0.1-cp310-none-win_amd64.whl
+    ```
+5. [Download](https://github.com/Haoming02/TensorRT-Toolkits/releases) / [Convert](#how-to-convert-models) a Model
 
 ## Features
+> This repo comes with a script to load a TensorRT engine; and two example scripts for running inferences
 
 #### Caption
 Caption images using Booru tags
-- Run the `tag.py` script and enter a path
-
-<details>
-<summary>Benchmark</summary>
-
-Caption 240 images within a folder using `RTX 3060`
-- Took **~16 sec**
-</details>
+- **Script:** `tag.py`
+- **Benchmark:** Tagging **850** images on a RTX 3060 took **~150s**
 
 #### Upscale
-Upscale the images by
-- Run the `upscale.py` script and enter a path
+Upscale images using ESRGAN
+- **Script:** `upscale.py`
+- **Benchmark:** Upscaling a **1024x1024** image on a RTX 3060 took:
+    - **~5.6s** via PyTorch `.pth`
+    - **~3.6s** via TensorRT `.trt`
 
-<details>
-<summary>Benchmarks</summary>
-
-Upscale a 1024x1024 Image on a `RTX 3060`
-- Running on [Forge](https://github.com/lllyasviel/stable-diffusion-webui-forge) in (`fp32`) PyTorch (`.pth`) format: **~54 sec**
-- Running (`fp32`) `4xNomos8kDAT` in TensorRT format: **~36 sec**
-- Running (`fp16`) `4xNomos8kSCHAT-S` in TensorRT format: **~26 sec**
-- Running (`fp16`) `2xHFA2kAVCSRFormer` in TensorRT format: **~4 sec**
-</details>
-
-## Convert Your Own Models
-- Prepare a `.onnx` model
-- Use the `trtexec` executable from the TensorRT package and run the command
+## How to Convert Models
+1. Prepare a `.onnx` model
+2. Extract the `trtexec.exe` program from the `bin` folder of the downloaded `.zip`
+3. Run the conversion command
     ```bash
     trtexec --onnx=model.onnx --saveEngine=model.trt
     ```
+
+> [!TIP]
+> See [here](https://github.com/Haoming02/TensorRT-Cpp#trtexec) for more details
+
+<hr>
+
+- **See Also:** [TensorRT-Cpp](https://github.com/Haoming02/TensorRT-Cpp) for **C++** implementation
